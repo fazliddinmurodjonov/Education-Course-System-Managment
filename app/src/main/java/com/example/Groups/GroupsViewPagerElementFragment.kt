@@ -10,7 +10,6 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.navigation.fragment.findNavController
 import com.example.adapters.GroupRecyclerViewAdapter
@@ -19,8 +18,8 @@ import com.example.androiddatabaselesson3pdpuz.R
 import com.example.androiddatabaselesson3pdpuz.databinding.CustomDialogGroupEditBinding
 import com.example.androiddatabaselesson3pdpuz.databinding.FragmentGroupsViewPagerElementBinding
 import com.example.db.PdpDb
-import com.example.models.Group
-import com.example.models.Mentor
+import com.example.room.entity.Group
+import com.example.room.entity.Mentor
 import com.example.utils.Constant
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken

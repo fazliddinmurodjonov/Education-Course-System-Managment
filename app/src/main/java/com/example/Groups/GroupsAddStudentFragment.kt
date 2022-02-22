@@ -7,10 +7,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
-import com.example.androiddatabaselesson3pdpuz.R
 import com.example.androiddatabaselesson3pdpuz.databinding.FragmentGroupsAddStudentBinding
 import com.example.db.PdpDb
-import com.example.models.Student
+import com.example.room.entity.Student
 
 
 class GroupsAddStudentFragment : Fragment() {

@@ -5,8 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.androiddatabaselesson3pdpuz.R
 import com.example.androiddatabaselesson3pdpuz.databinding.ItemGroupBinding
-import com.example.models.Group
-import com.example.models.Mentor
+import com.example.room.entity.Group
 
 class GroupRecyclerViewAdapter(var list: ArrayList<Group>) :
     RecyclerView.Adapter<GroupRecyclerViewAdapter.MyViewHolder>() {

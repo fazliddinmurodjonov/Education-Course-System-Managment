@@ -2,16 +2,13 @@ package com.example.Courses
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.ContentValues.TAG
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.navigation.fragment.findNavController
 import com.example.adapters.CourseRecyclerViewAdapter
@@ -19,7 +16,7 @@ import com.example.androiddatabaselesson3pdpuz.R
 import com.example.androiddatabaselesson3pdpuz.databinding.CustomDialogCourseAddBinding
 import com.example.androiddatabaselesson3pdpuz.databinding.FragmentCoursesAllCoursesBinding
 import com.example.db.PdpDb
-import com.example.models.Course
+import com.example.room.entity.Course
 
 class CoursesAllCoursesFragment : Fragment() {
     lateinit var binding: FragmentCoursesAllCoursesBinding

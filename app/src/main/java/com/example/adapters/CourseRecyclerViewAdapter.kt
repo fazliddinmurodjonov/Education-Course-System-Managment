@@ -1,11 +1,10 @@
 package com.example.adapters
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.androiddatabaselesson3pdpuz.databinding.ItemCourseBinding
-import com.example.models.Course
+import com.example.room.entity.Course
 
 class CourseRecyclerViewAdapter(var list: ArrayList<Course>) :
     RecyclerView.Adapter<CourseRecyclerViewAdapter.MyViewHolder>() {

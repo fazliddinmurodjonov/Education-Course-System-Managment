@@ -11,7 +11,7 @@ import com.example.adapters.CourseRecyclerViewAdapter
 import com.example.androiddatabaselesson3pdpuz.R
 import com.example.androiddatabaselesson3pdpuz.databinding.FragmentGroupsAllCoursesBinding
 import com.example.db.PdpDb
-import com.example.models.Course
+import com.example.room.entity.Course
 
 class GroupsAllCoursesFragment : Fragment() {
     lateinit var binding: FragmentGroupsAllCoursesBinding

@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
 import com.example.androiddatabaselesson3pdpuz.databinding.FragmentGroupsEditStudentBinding
 import com.example.db.PdpDb
-import com.example.models.Student
 
 
 class GroupsEditStudentFragment : Fragment() {

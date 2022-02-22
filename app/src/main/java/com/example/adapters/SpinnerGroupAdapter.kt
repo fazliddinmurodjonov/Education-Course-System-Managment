@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import com.example.androiddatabaselesson3pdpuz.databinding.ItemSpinnerBinding
-import com.example.models.Group
+import com.example.room.entity.Group
 
 class SpinnerGroupAdapter(var list: ArrayList<Group>) : BaseAdapter() {
     override fun isEnabled(position: Int): Boolean {

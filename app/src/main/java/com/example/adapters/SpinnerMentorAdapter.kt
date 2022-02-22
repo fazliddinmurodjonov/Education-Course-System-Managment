@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.SpinnerAdapter
 import com.example.androiddatabaselesson3pdpuz.databinding.ItemSpinnerBinding
-import com.example.models.Mentor
+import com.example.room.entity.Mentor
 
 class SpinnerMentorAdapter(var list: ArrayList<Mentor>) : BaseAdapter(),SpinnerAdapter {
 

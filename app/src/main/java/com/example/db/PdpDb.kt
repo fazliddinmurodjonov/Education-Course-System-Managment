@@ -5,10 +5,10 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import com.example.models.Course
-import com.example.models.Group
-import com.example.models.Mentor
-import com.example.models.Student
+import com.example.room.entity.Course
+import com.example.room.entity.Group
+import com.example.room.entity.Mentor
+import com.example.room.entity.Student
 import com.example.utils.Constant
 
 class PdpDb(context: Context) :

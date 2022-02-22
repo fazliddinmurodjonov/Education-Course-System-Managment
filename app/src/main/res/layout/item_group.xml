@@ -13,7 +13,7 @@
         android:layout_marginStart="20dp"
         android:layout_marginTop="10dp"
         android:fontFamily="@font/roboto_slab"
-        android:text="PDP Android G-18"
+        android:text="Android A-18"
         android:textColor="@color/black"
         android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"

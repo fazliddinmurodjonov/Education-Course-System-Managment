@@ -1,20 +1,18 @@
 package com.example.Groups
 
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.navigation.fragment.findNavController
 import com.example.adapters.StudentRecyclerViewAdapter
 import com.example.androiddatabaselesson3pdpuz.R
 import com.example.androiddatabaselesson3pdpuz.databinding.FragmentGroupsAboutCourseGroupDetailsBinding
 import com.example.db.PdpDb
-import com.example.models.Student
+import com.example.room.entity.Student
 import com.example.utils.Constant
 
 class GroupsAboutCourseGroupDetailsFragment : Fragment() {

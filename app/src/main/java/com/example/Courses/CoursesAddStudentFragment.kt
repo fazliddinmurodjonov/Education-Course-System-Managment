@@ -7,16 +7,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
-import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import com.example.adapters.SpinnerGroupAdapter
 import com.example.adapters.SpinnerMentorAdapter
 import com.example.androiddatabaselesson3pdpuz.R
 import com.example.androiddatabaselesson3pdpuz.databinding.FragmentCoursesAddStudentBinding
 import com.example.db.PdpDb
-import com.example.models.Group
-import com.example.models.Mentor
-import com.example.models.Student
+import com.example.room.entity.Group
+import com.example.room.entity.Mentor
+import com.example.room.entity.Student
 import com.example.utils.Constant
 
 

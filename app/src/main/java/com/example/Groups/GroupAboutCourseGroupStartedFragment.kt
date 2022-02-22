@@ -11,9 +11,8 @@ import androidx.navigation.fragment.findNavController
 import com.example.adapters.StudentRecyclerViewAdapter
 import com.example.androiddatabaselesson3pdpuz.R
 import com.example.androiddatabaselesson3pdpuz.databinding.FragmentGroupAboutCourseGroupStartedBinding
-import com.example.androiddatabaselesson3pdpuz.databinding.FragmentGroupsAboutCourseGroupBinding
 import com.example.db.PdpDb
-import com.example.models.Student
+import com.example.room.entity.Student
 import com.example.utils.Constant
 
 class GroupAboutCourseGroupStartedFragment : Fragment() {
