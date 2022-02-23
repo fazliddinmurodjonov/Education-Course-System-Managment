@@ -4,7 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.androiddatabaselesson3pdpuz.databinding.ItemCourseBinding
-import com.example.room.entity.Course
+import com.example.room.Entity.Course
 
 class CourseRecyclerViewAdapter(var list: ArrayList<Course>) :
     RecyclerView.Adapter<CourseRecyclerViewAdapter.MyViewHolder>() {

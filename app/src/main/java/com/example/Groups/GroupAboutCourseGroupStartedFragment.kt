@@ -11,15 +11,15 @@ import androidx.navigation.fragment.findNavController
 import com.example.adapters.StudentRecyclerViewAdapter
 import com.example.androiddatabaselesson3pdpuz.R
 import com.example.androiddatabaselesson3pdpuz.databinding.FragmentGroupAboutCourseGroupStartedBinding
-import com.example.db.PdpDb
-import com.example.room.entity.Student
+import com.example.room.Database.PdpDatabase
+import com.example.room.Entity.Student
 import com.example.utils.Constant
 
 class GroupAboutCourseGroupStartedFragment : Fragment() {
 
     lateinit var binding: FragmentGroupAboutCourseGroupStartedBinding
     private var groupId: Int = 0
-    lateinit var pdpDb: PdpDb
+    lateinit var pdpDb: PdpDatabase
     lateinit var studentRecyclerViewAdapter: StudentRecyclerViewAdapter
     lateinit var studentList: ArrayList<Student>
     override fun onCreateView(
@@ -27,15 +27,13 @@ class GroupAboutCourseGroupStartedFragment : Fragment() {
         savedInstanceState: Bundle?,
     ): View? {
         binding = FragmentGroupAboutCourseGroupStartedBinding.inflate(inflater, container, false)
-        pdpDb = PdpDb(requireContext())
+        pdpDb = PdpDatabase.getInstance(requireContext())
         groupId = arguments?.getInt("group_id")!!
-        val group = pdpDb.getGroupById(groupId)
-        val query =
-            "select *from ${Constant.STUDENT_TABLE} WHERE ${Constant.STUDENT_GROUP_ID} = $groupId"
-        studentList = pdpDb.getAllStudent(query)
+        val group = pdpDb.GroupsDao().getGroupById(groupId)
+        studentList.addAll(pdpDb.StudentWithGroupDao().getStudentsByGroup(groupId).students)
         binding.groupNameToolBar.text = group.name
         binding.groupName.text = group.name
-        binding.numberOfStudents.text = group.studentSCount.toString()
+        binding.numberOfStudents.text = group.studentCount.toString()
         binding.time.text = group.time
         studentRecyclerViewAdapter = StudentRecyclerViewAdapter(studentList)
         binding.studentRV.adapter = studentRecyclerViewAdapter
@@ -53,10 +51,10 @@ class GroupAboutCourseGroupStartedFragment : Fragment() {
                     studentList.remove(student)
                     studentRecyclerViewAdapter.notifyItemRemoved(studentList.size)
                     studentRecyclerViewAdapter.notifyItemRangeRemoved(position, studentList.size)
-                    pdpDb.deleteStudent(student)
-                    group.studentSCount = group.studentSCount - 1
-                    pdpDb.updateGroup(group)
-                    binding.numberOfStudents.text = group.studentSCount.toString()
+                    pdpDb.StudentDao().deleteStudent(student)
+                    group.studentCount = group.studentCount!! - 1
+                    pdpDb.GroupsDao().updateGroup(group)
+                    binding.numberOfStudents.text = group.studentCount.toString()
                 }
                 alertDialog.setNegativeButton("No"
                 ) { _, _ -> }

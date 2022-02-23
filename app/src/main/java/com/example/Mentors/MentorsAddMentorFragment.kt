@@ -7,14 +7,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
 import com.example.androiddatabaselesson3pdpuz.databinding.FragmentMentorsAddMentorBinding
-import com.example.db.PdpDb
-import com.example.room.entity.Mentor
+import com.example.room.Database.PdpDatabase
+import com.example.room.Entity.Mentor
+import com.example.util.Empty
 
 
 class MentorsAddMentorFragment : Fragment() {
 
     lateinit var binding: FragmentMentorsAddMentorBinding
-    lateinit var pdpDb: PdpDb
+    lateinit var pdpDb: PdpDatabase
     val courseId = arguments?.getInt("courseId")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -22,7 +23,7 @@ class MentorsAddMentorFragment : Fragment() {
     ): View? {
 
         binding = FragmentMentorsAddMentorBinding.inflate(inflater, container, false)
-        pdpDb = PdpDb(requireContext())
+        pdpDb = PdpDatabase.getInstance(requireContext())
         binding.backButton.setOnClickListener {
             findNavController().popBackStack()
         }
@@ -31,38 +32,29 @@ class MentorsAddMentorFragment : Fragment() {
             val lastname = binding.EditTextLastname.text.toString()
             val firstname = binding.EditTextFirstname.text.toString()
             val fathersName = binding.EditTextFathersName.text.toString()
-            var lastnameBol = false
-            var firstnameBol = false
-            var fathersNameBol = false
-
-            for (c in lastname) {
-
-                if (c != ' ') {
-                    lastnameBol = true
-                    break
-                }
-            }
-            for (c in firstname) {
-                if (c != ' ') {
-                    firstnameBol = true
-                }
-            }
-            for (c in fathersName) {
-                if (c != ' ') {
-                    fathersNameBol = true
-                }
-            }
+            val firstnameBol = Empty.empty(firstname)
+            val lastnameBol = Empty.empty(lastname)
+            val fatherSNameBol = Empty.empty(fathersName)
+            val firstnameSpace = Empty.space(firstname)
+            val lastnameSpace = Empty.space(lastname)
+            val fatherSNameSpace = Empty.space(fathersName)
             var uniqueMentor = true
+            val bol = firstnameBol && lastnameBol && fatherSNameBol
+            val space = firstnameSpace && lastnameSpace && fatherSNameSpace
             val courseId = arguments?.getInt("courseId")
-            val allMentorList = pdpDb.getAllMentor(courseId!!)
+
+            val allMentorList = ArrayList<Mentor>()
+            allMentorList.addAll(pdpDb.CourseWithMentorsDao()
+                .getMentorsByCourse(courseId!!).mentors)
+
             for (mentor in allMentorList) {
                 if (mentor.firstname == firstname && mentor.lastname == lastname) {
                     uniqueMentor = false
                 }
             }
-            if (lastname != " " && firstname != " " && fathersName != " " && lastnameBol && firstnameBol && fathersNameBol && uniqueMentor) {
-                val mentor = Mentor(firstname, lastname, fathersName, courseId, "")
-                pdpDb.insertMentor(mentor)
+            if (bol && space && uniqueMentor) {
+                val mentor = Mentor(firstname, lastname, fathersName, courseId)
+                pdpDb.MentorDao().insertMentor(mentor)
                 findNavController().popBackStack()
             }
         }

@@ -1,10 +1,7 @@
 package com.example.room.Dao
 
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.Update
-import com.example.room.entity.Student
+import androidx.room.*
+import com.example.room.Entity.Student
 
 @Dao
 interface StudentDao {
@@ -16,4 +13,7 @@ interface StudentDao {
 
     @Delete
     fun deleteStudent(student: Student)
+
+    @Query("select *from Student where id = :studentId")
+    fun getStudentById(studentId: Int): Student
 }

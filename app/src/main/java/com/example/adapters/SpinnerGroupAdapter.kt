@@ -7,16 +7,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import com.example.androiddatabaselesson3pdpuz.databinding.ItemSpinnerBinding
-import com.example.room.entity.Group
+import com.example.room.Entity.Groups
 
-class SpinnerGroupAdapter(var list: ArrayList<Group>) : BaseAdapter() {
+class SpinnerGroupAdapter(var list: ArrayList<Groups>) : BaseAdapter() {
     override fun isEnabled(position: Int): Boolean {
         return position != 0
     }
 
     override fun getCount(): Int = list.size
 
-    override fun getItem(position: Int): Group {
+    override fun getItem(position: Int): Groups {
         return list[position]
     }
 

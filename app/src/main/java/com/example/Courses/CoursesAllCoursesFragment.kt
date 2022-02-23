@@ -15,12 +15,13 @@ import com.example.adapters.CourseRecyclerViewAdapter
 import com.example.androiddatabaselesson3pdpuz.R
 import com.example.androiddatabaselesson3pdpuz.databinding.CustomDialogCourseAddBinding
 import com.example.androiddatabaselesson3pdpuz.databinding.FragmentCoursesAllCoursesBinding
-import com.example.db.PdpDb
-import com.example.room.entity.Course
+import com.example.room.Database.PdpDatabase
+import com.example.room.Entity.Course
+import com.example.util.Empty
 
 class CoursesAllCoursesFragment : Fragment() {
     lateinit var binding: FragmentCoursesAllCoursesBinding
-    lateinit var pdpDb: PdpDb
+    lateinit var pdpDb: PdpDatabase
     lateinit var courseRecyclerViewAdapter: CourseRecyclerViewAdapter
     lateinit var courseList: ArrayList<Course>
 
@@ -30,7 +31,7 @@ class CoursesAllCoursesFragment : Fragment() {
         savedInstanceState: Bundle?,
     ): View? {
         binding = FragmentCoursesAllCoursesBinding.inflate(inflater, container, false)
-        pdpDb = PdpDb(requireContext())
+        pdpDb = PdpDatabase.getInstance(requireContext())
         loadRV()
 
 
@@ -51,22 +52,14 @@ class CoursesAllCoursesFragment : Fragment() {
             dialogItemView.saveTv.setOnClickListener {
                 var courseName = dialogItemView.courseName.text.toString()
                 val courseAbout = dialogItemView.aboutCourse.text.toString()
-                var courseNameBol = false
-                var courseAboutBol = false
-                for (c in courseName) {
-                    if (c != ' ') {
-                        courseNameBol = true
-                        break
-                    }
-                }
-                for (c in courseAbout) {
-                    if (c != ' ') {
-                        courseAboutBol = true
-                        break
-                    }
-                }
+                val courseNameBol = Empty.empty(courseName)
+                val courseAboutBol = Empty.empty(courseAbout)
+                val courseNameSpace = Empty.space(courseName)
+                val courseAboutSpace = Empty.space(courseAbout)
                 var uniqueCourse = true
-                val allCourseList = pdpDb.getAllCourse()
+                val allCourseList = ArrayList<Course>()
+                allCourseList.addAll(pdpDb.CourseDao().getAllCourse())
+
                 for (course in allCourseList) {
                     val name = course.name?.replace("\nDevelopment", "")
                     if (name == courseName) {
@@ -74,18 +67,17 @@ class CoursesAllCoursesFragment : Fragment() {
                         break
                     }
                 }
-                if (courseName != " " && courseNameBol && courseAbout != " " && courseAboutBol && uniqueCourse) {
+                if (courseNameBol && courseAboutBol && courseNameSpace && courseAboutSpace && uniqueCourse) {
                     courseName += "\nDevelopment"
 
                     val course = Course(courseName, courseAbout)
-                    pdpDb.insertCourse(course)
+                    pdpDb.CourseDao().insertCourse(course)
                     dialog.dismiss()
                     loadRV()
-
                     courseRecyclerViewAdapter.setOnMyItemClickListener(object :
                         CourseRecyclerViewAdapter.OnMyItemClickListener {
                         override fun onClick(course: Course) {
-                            val bundleOf = bundleOf("course_id" to course.id)
+                            val bundleOf = bundleOf("course_id" to course.courseId)
                             findNavController().navigate(R.id.coursesAboutCourseFragment, bundleOf)
                         }
                     })
@@ -100,7 +92,7 @@ class CoursesAllCoursesFragment : Fragment() {
         courseRecyclerViewAdapter.setOnMyItemClickListener(object :
             CourseRecyclerViewAdapter.OnMyItemClickListener {
             override fun onClick(course: Course) {
-                val bundleOf = bundleOf("course_id" to course.id)
+                val bundleOf = bundleOf("course_id" to course.courseId)
                 findNavController().navigate(R.id.coursesAboutCourseFragment, bundleOf)
             }
 
@@ -111,7 +103,7 @@ class CoursesAllCoursesFragment : Fragment() {
 
     fun loadRV() {
         courseList = ArrayList()
-        courseList = pdpDb.getAllCourse()
+        courseList.addAll(pdpDb.CourseDao().getAllCourse())
         courseRecyclerViewAdapter = CourseRecyclerViewAdapter(courseList)
         binding.allCoursesInCoursesRV.adapter = courseRecyclerViewAdapter
     }
@@ -119,7 +111,5 @@ class CoursesAllCoursesFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-
-
     }
 }

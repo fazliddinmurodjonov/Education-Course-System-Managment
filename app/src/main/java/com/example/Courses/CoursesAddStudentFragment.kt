@@ -12,27 +12,30 @@ import com.example.adapters.SpinnerGroupAdapter
 import com.example.adapters.SpinnerMentorAdapter
 import com.example.androiddatabaselesson3pdpuz.R
 import com.example.androiddatabaselesson3pdpuz.databinding.FragmentCoursesAddStudentBinding
-import com.example.db.PdpDb
-import com.example.room.entity.Group
-import com.example.room.entity.Mentor
-import com.example.room.entity.Student
+import com.example.room.Database.PdpDatabase
+import com.example.room.Entity.Groups
+import com.example.room.Entity.Mentor
+import com.example.room.Entity.Student
+import com.example.util.Empty
 import com.example.utils.Constant
 
 
 class CoursesAddStudentFragment : Fragment() {
 
     lateinit var binding: FragmentCoursesAddStudentBinding
-    lateinit var pdpDb: PdpDb
+    lateinit var pdpDb: PdpDatabase
     lateinit var datePickerDialog: DatePickerDialog
     lateinit var spinnerMentorList: ArrayList<Mentor>
-    lateinit var spinnerGroupList: ArrayList<Group>
+    lateinit var spinnerGroupList: ArrayList<Groups>
     lateinit var spinnerGroupAdapter: SpinnerGroupAdapter
+    var courseId = 0
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View? {
         binding = FragmentCoursesAddStudentBinding.inflate(inflater, container, false)
-        pdpDb = PdpDb(requireContext())
+        pdpDb = PdpDatabase.getInstance(requireContext())
+        courseId = arguments?.getInt("course_id")!!
         spinnerMentorList = ArrayList()
         binding.backButton.setOnClickListener {
             findNavController().popBackStack()
@@ -51,12 +54,13 @@ class CoursesAddStudentFragment : Fragment() {
             ) {
                 if (position != 0) {
                     spinnerGroupList = ArrayList()
-                    val group = Group()
+                    val group = Groups()
                     group.name = "Select group"
                     spinnerGroupList.add(group)
-                    val query =
-                        "SELECT * FROM '${Constant.GROUP_TABLE}' WHERE ${Constant.GROUP_MENTOR_ID} = ${spinnerMentorList[binding.chooseMentorSpinner.selectedItemPosition].id}  AND ${Constant.GROUP_LESSON} = 0"
-                    spinnerGroupList.addAll(loadGroup(query))
+                    val mentorId =
+                        spinnerMentorList[binding.chooseMentorSpinner.selectedItemPosition].mentorId
+                    spinnerGroupList.addAll(pdpDb.GroupsDao()
+                        .getGroupsByMentor(mentorId!!, courseId!!, 0))
                     spinnerGroupAdapter = SpinnerGroupAdapter(spinnerGroupList)
                     binding.chooseGroupSpinner.adapter = spinnerGroupAdapter
                 }
@@ -84,29 +88,32 @@ class CoursesAddStudentFragment : Fragment() {
             val date = binding.addDate.text.toString()
             val mentorPosition = binding.chooseMentorSpinner.selectedItemPosition
             val groupPosition = binding.chooseGroupSpinner.selectedItemPosition
-            val lastnameBol = notEmpty(lastname)
-            val firstnameBol = notEmpty(firstname)
-            val fatherSNameBol = notEmpty(fatherSName)
-            val dateBol = notEmpty(date)
-            if (lastname != " " && firstname != " " && fatherSName != " " && date != " " && lastnameBol &&
-                firstnameBol && fatherSNameBol && dateBol && mentorPosition != 0 && groupPosition != 0
-            ) {
+            val lastnameBol = Empty.empty(lastname)
+            val firstnameBol = Empty.empty(firstname)
+            val fatherSNameBol = Empty.empty(fatherSName)
+            val dateBol = Empty.empty(date)
+            val lastnameSpace = Empty.space(lastname)
+            val firstnameSpace = Empty.space(firstname)
+            val fathersNameSpace = Empty.space(fatherSName)
+            val dateSpace = Empty.space(date)
+            val bol = lastnameBol && firstnameBol && fatherSNameBol && dateBol
+            val space = lastnameSpace && firstnameSpace && fathersNameSpace && dateSpace
+            if (bol && space && mentorPosition != 0 && groupPosition != 0) {
                 val student = Student(firstname,
                     lastname,
                     fatherSName,
                     date,
-                    spinnerGroupList[groupPosition].id)
-
-                pdpDb.insertStudent(student)
-
-                var group = pdpDb.getGroupById(spinnerGroupList[groupPosition].id!!)
-
-                var studentCount = group.studentSCount
-                group.lessonStart = 0
-                studentCount++
-
-                group.studentSCount = studentCount
-                pdpDb.updateGroup(group)
+                    spinnerGroupList[groupPosition].groupId)
+                val group = spinnerGroupList[groupPosition]
+                if (group.studentCount == null) {
+                    group.studentCount = 1
+                } else {
+                    var studentCount = group.studentCount!!
+                    ++studentCount
+                    group.studentCount = studentCount
+                }
+                pdpDb.GroupsDao().updateGroup(group)
+                pdpDb.StudentDao().insertStudent(student)
                 findNavController().popBackStack(R.id.coursesAllCoursesFragment, false)
             }
         }
@@ -114,33 +121,13 @@ class CoursesAddStudentFragment : Fragment() {
         return binding.root
     }
 
-    private fun notEmpty(text: String): Boolean {
-        var textBol = false
-        for (c in text) {
-            if (c != ' ') {
-                textBol = true
-                break
-            }
-        }
-        return textBol
-    }
-
-    private fun loadGroup(query: String): ArrayList<Group> {
-        val spinnerGroupList = ArrayList<Group>()
-        val groupList = pdpDb.getAllGroup(query)
-        spinnerGroupList.addAll(groupList)
-        return spinnerGroupList
-    }
-
     private fun loadMentor(): ArrayList<Mentor> {
         val mentorList = ArrayList<Mentor>()
-        val courseId = arguments?.getInt("course_id")
-        val allMentor = pdpDb.getAllMentor(courseId!!)
         var mentor = Mentor()
         mentor.firstname = "Select"
         mentor.lastname = "mentor"
         mentorList.add(mentor)
-        mentorList.addAll(allMentor)
+        mentorList.addAll(pdpDb.CourseWithMentorsDao().getMentorsByCourse(courseId).mentors)
         return mentorList
     }
 

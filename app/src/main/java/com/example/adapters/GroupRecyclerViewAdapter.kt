@@ -5,24 +5,25 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.androiddatabaselesson3pdpuz.R
 import com.example.androiddatabaselesson3pdpuz.databinding.ItemGroupBinding
-import com.example.room.entity.Group
+import com.example.room.Database.PdpDatabase
+import com.example.room.Entity.Groups
 
-class GroupRecyclerViewAdapter(var list: ArrayList<Group>) :
+class GroupRecyclerViewAdapter(var list: ArrayList<Groups>) :
     RecyclerView.Adapter<GroupRecyclerViewAdapter.MyViewHolder>() {
     lateinit var adapterEdit: OnItemEdit
     lateinit var adapterDelete: OnItemDelete
     lateinit var adapterView: OnItemView
 
     interface OnItemEdit {
-        fun onClick(group: Group, position: Int)
+        fun onClick(group: Groups, position: Int)
     }
 
     interface OnItemDelete {
-        fun onClick(group: Group, position: Int)
+        fun onClick(group: Groups, position: Int)
     }
 
     interface OnItemView {
-        fun onClick(group: Group, position: Int)
+        fun onClick(group: Groups, position: Int)
 
     }
 
@@ -41,9 +42,9 @@ class GroupRecyclerViewAdapter(var list: ArrayList<Group>) :
 
     inner class MyViewHolder(val binding: ItemGroupBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun onBind(group: Group, position: Int) {
+        fun onBind(group: Groups, position: Int) {
             binding.groupName.text = group.name.toString()
-            binding.numberOfStudents.text = group.studentSCount.toString()
+            binding.numberOfStudents.text = group.studentCount.toString()
             binding.alter.setImageResource(R.drawable.ic_edit)
             binding.delete.setImageResource(R.drawable.ic_delete)
             binding.view.setImageResource(R.drawable.ic_view)

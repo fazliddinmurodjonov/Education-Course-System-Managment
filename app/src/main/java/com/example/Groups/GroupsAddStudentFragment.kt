@@ -8,20 +8,21 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
 import com.example.androiddatabaselesson3pdpuz.databinding.FragmentGroupsAddStudentBinding
-import com.example.db.PdpDb
-import com.example.room.entity.Student
+import com.example.room.Database.PdpDatabase
+import com.example.room.Entity.Student
+import com.example.util.Empty
 
 
 class GroupsAddStudentFragment : Fragment() {
     lateinit var binding: FragmentGroupsAddStudentBinding
-    lateinit var pdpDb: PdpDb
+    lateinit var pdpDb: PdpDatabase
     lateinit var datePickerDialog: DatePickerDialog
     var groupId: Int? = 0
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View? {
-        pdpDb = PdpDb(requireContext())
+        pdpDb = PdpDatabase.getInstance(requireContext())
         groupId = arguments?.getInt("group_id")
         binding = FragmentGroupsAddStudentBinding.inflate(inflater, container, false)
         binding.dateCalendar.setOnClickListener {
@@ -36,33 +37,25 @@ class GroupsAddStudentFragment : Fragment() {
             val lastname = binding.addLastnameToThisGroup.text.toString()
             val fatherSName = binding.addFathersNameToThisGroup.text.toString()
             val time = binding.addDateToThisGroup.text.toString()
-            val notEmpty = notEmpty(firstname)
-            val notEmpty1 = notEmpty(lastname)
-            val notEmpty2 = notEmpty(fatherSName)
-            val notEmpty3 = notEmpty(time)
-
-            if (firstname != " " && lastname != " " && fatherSName != " " && time != " " && notEmpty
-                && notEmpty1 && notEmpty2 && notEmpty3
-            ) {
+            val firstnameBol = Empty.empty(firstname)
+            val lastnameBol = Empty.empty(lastname)
+            val fatherSNameBol = Empty.empty(fatherSName)
+            val timeBol = Empty.empty(time)
+            val firstnameSpace = Empty.space(firstname)
+            val lastnameSpace = Empty.space(lastname)
+            val fatherSNameSpace = Empty.space(fatherSName)
+            val timeSpace = Empty.space(time)
+            val bol = firstnameBol && lastnameBol && fatherSNameBol && timeBol
+            val space = firstnameSpace && lastnameSpace && fatherSNameSpace && timeSpace
+            if (bol && space) {
                 val student = Student(firstname, lastname, fatherSName, time, groupId)
-                pdpDb.insertStudent(student)
-                val group = pdpDb.getGroupById(groupId!!)
-                group.studentSCount++
-                pdpDb.updateGroup(group)
+                pdpDb.StudentDao().insertStudent(student)
+                val group = pdpDb.GroupsDao().getGroupById(groupId!!)
+                group.studentCount = group.studentCount!! + 1
+                pdpDb.GroupsDao().updateGroup(group)
                 findNavController().popBackStack()
             }
         }
         return binding.root
-    }
-
-    private fun notEmpty(text: String): Boolean {
-        var textBol = false
-        for (c in text) {
-            if (c != ' ') {
-                textBol = true
-                break
-            }
-        }
-        return textBol
     }
 }

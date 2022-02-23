@@ -14,24 +14,24 @@ import com.example.adapters.MentorRecyclerViewAdapter
 import com.example.androiddatabaselesson3pdpuz.R
 import com.example.androiddatabaselesson3pdpuz.databinding.CustomDialogMentorEditBinding
 import com.example.androiddatabaselesson3pdpuz.databinding.FragmentMentorsCourseMentorsBinding
-import com.example.db.PdpDb
-import com.example.room.entity.Mentor
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import com.example.room.Database.PdpDatabase
+import com.example.room.Entity.Groups
+import com.example.room.Entity.Mentor
+import com.example.util.Empty
 
 
 class MentorsCourseMentorsFragment : Fragment() {
 
     lateinit var binding: FragmentMentorsCourseMentorsBinding
     lateinit var mentorRecyclerViewAdapter: MentorRecyclerViewAdapter
-    lateinit var pdpDb: PdpDb
+    lateinit var pdpDb: PdpDatabase
     lateinit var mentorList: ArrayList<Mentor>
     var courseId: Int = 0
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View? {
-        pdpDb = PdpDb(requireContext())
+        pdpDb = PdpDatabase.getInstance(requireContext())
         courseId = arguments?.getInt("course_id")!!
         binding = FragmentMentorsCourseMentorsBinding.inflate(inflater, container, false)
         binding.backButton.setOnClickListener {
@@ -49,22 +49,19 @@ class MentorsCourseMentorsFragment : Fragment() {
         mentorRecyclerViewAdapter.setOnItemDelete(object :
             MentorRecyclerViewAdapter.OnItemDelete {
             override fun onClick(mentor: Mentor, position: Int) {
-                var gson = Gson()
-                var groupList = ArrayList<Int>()
-                val groups = mentor.groupIdList
-                if (groups != "") {
-                    val type = object : TypeToken<ArrayList<Int>>() {}.type
-                    groupList = gson.fromJson<ArrayList<Int>>(groups, type)
-                }
-
+                var groupList = ArrayList<Groups>()
+                groupList.addAll(pdpDb.MentorWithGroupsDao()
+                    .getGroupsByMentor(mentor.mentorId!!).groups)
                 if (groupList.size == 0) {
+                    pdpDb.MentorDao().deleteMentor(mentor)
                     mentorList.remove(mentor)
                     mentorRecyclerViewAdapter.notifyItemRemoved(mentorList.size)
                     mentorRecyclerViewAdapter.notifyItemRangeRemoved(position, mentorList.size)
-                    pdpDb.deleteMentor(mentor)
                 } else {
 
                 }
+
+
             }
 
         })
@@ -88,41 +85,29 @@ class MentorsCourseMentorsFragment : Fragment() {
                     var firstname = mentorItem.mentorFirstname.text.toString()
                     var lastname = mentorItem.mentorLastname.text.toString()
                     var fatherSName = mentorItem.mentorFatherName.text.toString()
-                    var bolFirst = false
-                    var bolLast = false
-                    var bolFat = false
-                    for (c in firstname) {
-                        if (c != ' ') {
-                            bolFirst = true
-                            break
-                        }
-                    }
-                    for (c in lastname) {
-                        if (c != ' ') {
-                            bolLast = true
-                            break
-                        }
-                    }
-                    for (c in fatherSName) {
-                        if (c != ' ') {
-                            bolFat = true
-                            break
-                        }
-                    }
+                    val firstnameBol = Empty.empty(firstname)
+                    val lastnameBol = Empty.empty(lastname)
+                    val fatherSNameBol = Empty.empty(fatherSName)
+                    val firstnameSpace = Empty.space(firstname)
+                    val lastnameSpace = Empty.space(lastname)
+                    val fatherSNameSpace = Empty.space(fatherSName)
                     var uniqueMentor = true
-                    val allMentorList = pdpDb.getAllMentor(courseId)
+                    val allMentorList = ArrayList<Mentor>()
+                    allMentorList.addAll(pdpDb.MentorDao().getAllMentors(courseId))
                     for (m in allMentorList) {
                         if (m.firstname == firstname && m.lastname == lastname) {
-                            if (m.id != mentor.id) {
+                            if (m.mentorId != mentor.mentorId) {
                                 uniqueMentor = false
                             }
                         }
                     }
-                    if (firstname != " " && lastname != " " && fatherSName != " " && bolFirst && bolLast && bolFat && uniqueMentor) {
+                    val bol = firstnameBol && lastnameBol && fatherSNameBol
+                    val space = firstnameSpace && lastnameSpace && fatherSNameSpace
+                    if (bol && space && uniqueMentor) {
                         mentor.firstname = firstname
                         mentor.lastname = lastname
                         mentor.fatherSName = fatherSName
-                        pdpDb.updateMentor(mentor)
+                        pdpDb.MentorDao().updateMentor(mentor)
                         mentorList[position] = mentor
                         mentorRecyclerViewAdapter.notifyItemChanged(position)
                         dialog.dismiss()
@@ -136,7 +121,8 @@ class MentorsCourseMentorsFragment : Fragment() {
     }
 
     private fun loadMentorRV() {
-        mentorList = pdpDb.getAllMentor(courseId)
+        mentorList = ArrayList()
+        mentorList.addAll(pdpDb.CourseWithMentorsDao().getMentorsByCourse(courseId!!).mentors)
         mentorRecyclerViewAdapter = MentorRecyclerViewAdapter(mentorList)
         binding.allMentorsRV.adapter = mentorRecyclerViewAdapter
     }

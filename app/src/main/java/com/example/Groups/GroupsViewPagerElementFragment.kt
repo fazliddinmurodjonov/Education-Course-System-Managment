@@ -17,9 +17,11 @@ import com.example.adapters.SpinnerMentorAdapter
 import com.example.androiddatabaselesson3pdpuz.R
 import com.example.androiddatabaselesson3pdpuz.databinding.CustomDialogGroupEditBinding
 import com.example.androiddatabaselesson3pdpuz.databinding.FragmentGroupsViewPagerElementBinding
-import com.example.db.PdpDb
-import com.example.room.entity.Group
-import com.example.room.entity.Mentor
+import com.example.room.Database.PdpDatabase
+import com.example.room.Entity.Groups
+import com.example.room.Entity.Mentor
+import com.example.room.Entity.Student
+import com.example.util.Empty
 import com.example.utils.Constant
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -27,12 +29,12 @@ import com.google.gson.reflect.TypeToken
 private const val GROUP_LESSON = "groups"
 private const val COURSE_ID = "course_id"
 
-class   GroupsViewPagerElementFragment : Fragment() {
+class GroupsViewPagerElementFragment : Fragment() {
     private var groupLesson: Int? = null
     private var courseId: Int? = null
     lateinit var binding: FragmentGroupsViewPagerElementBinding
     lateinit var groupRecyclerViewAdapter: GroupRecyclerViewAdapter
-    lateinit var pdpDb: PdpDb
+    lateinit var pdpDb: PdpDatabase
     lateinit var gson: Gson
     val type = object : TypeToken<ArrayList<Int>>() {}.type
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,53 +52,30 @@ class   GroupsViewPagerElementFragment : Fragment() {
         savedInstanceState: Bundle?,
     ): View? {
         gson = Gson()
-        pdpDb = PdpDb(requireContext())
+        pdpDb = PdpDatabase.getInstance(requireContext())
         val groupList = loadList()
         binding = FragmentGroupsViewPagerElementBinding.inflate(inflater, container, false)
         groupRecyclerViewAdapter = GroupRecyclerViewAdapter(groupList)
         binding.groupsRV.adapter = groupRecyclerViewAdapter
         groupRecyclerViewAdapter.setOnItemDelete(object : GroupRecyclerViewAdapter.OnItemDelete {
-            override fun onClick(group: Group, position: Int) {
+            override fun onClick(group: Groups, position: Int) {
+                val studentList = ArrayList<Student>()
+                studentList.addAll(pdpDb.StudentWithGroupDao()
+                    .getStudentsByGroup(group.groupId!!).students)
 
-                val query =
-                    "select *from ${Constant.STUDENT_TABLE} WHERE ${Constant.STUDENT_GROUP_ID} = ${group.id}"
-                val studentList = pdpDb.getAllStudent(query)
                 for (student in studentList) {
-                    pdpDb.deleteStudent(student)
+                    pdpDb.StudentDao().deleteStudent(student)
                 }
-//                var mentor = pdpDb.getMentorById(group.mentorId!!)
-//                val groupIdList = mentor.groupIdList
-//
-//                var idList = gson.fromJson<ArrayList<Int>>(groupIdList, type)
-//                idList.remove(group.id)
-//                if (idList.size == 0) {
-//                    mentor.groupIdList = ""
-//                } else {
-//                    val toJson = gson.toJson(idList)
-//                    mentor.groupIdList = toJson
-//                }
-//                pdpDb.updateMentor(mentor)
-                val mentorOld = pdpDb.getMentorById(group.mentorId!!)
-                var mentorOldGroupIdList =
-                    gson.fromJson<ArrayList<Int>>(mentorOld.groupIdList, type)
-                mentorOldGroupIdList.remove(group.id)
-                if (mentorOldGroupIdList.size == 0) {
-                    mentorOld.groupIdList = ""
-                } else {
-                    val toJson = gson.toJson(mentorOldGroupIdList)
-                    mentorOld.groupIdList = toJson
-                }
-                pdpDb.updateMentor(mentorOld)
                 groupList.remove(group)
                 groupRecyclerViewAdapter.notifyItemRemoved(groupList.size)
                 groupRecyclerViewAdapter.notifyItemRangeRemoved(position, groupList.size)
-                pdpDb.deleteGroup(group)
+                pdpDb.GroupsDao().deleteGroup(group)
             }
 
         })
         groupRecyclerViewAdapter.setOnItemView(object : GroupRecyclerViewAdapter.OnItemView {
-            override fun onClick(group: Group, position: Int) {
-                val bundleOf = bundleOf("group_id" to group.id)
+            override fun onClick(group: Groups, position: Int) {
+                val bundleOf = bundleOf("group_id" to group.groupId)
                 if (group.lessonStart == 0) {
                     findNavController().navigate(R.id.groupsAboutCourseGroupDetailsFragment,
                         bundleOf)
@@ -110,7 +89,7 @@ class   GroupsViewPagerElementFragment : Fragment() {
         })
         groupRecyclerViewAdapter.setOnItemEdit(object : GroupRecyclerViewAdapter.OnItemEdit {
             @SuppressLint("NotifyDataSetChanged")
-            override fun onClick(group: Group, position: Int) {
+            override fun onClick(group: Groups, position: Int) {
                 val spinnerMentorAdapter: SpinnerMentorAdapter
                 val dialog = Dialog(requireContext())
                 val dialogView =
@@ -124,13 +103,13 @@ class   GroupsViewPagerElementFragment : Fragment() {
                 mentor.firstname = "Select"
                 mentor.lastname = " mentor"
                 mentorList.add(mentor)
-                mentorList.addAll(pdpDb.getAllMentor(group.courseId!!))
-
+                mentorList.addAll(pdpDb.MentorDao().getAllMentors(courseId!!))
                 spinnerMentorAdapter = SpinnerMentorAdapter(mentorList)
                 dialogView.mentorListSpinner.adapter = spinnerMentorAdapter
                 var position = 0
+
                 for (mentor in mentorList) {
-                    if (mentor.id == group.mentorId) {
+                    if (mentor.mentorId == group.groupMentorId) {
                         position = mentorList.indexOf(mentor)
                         break
                     }
@@ -162,55 +141,34 @@ class   GroupsViewPagerElementFragment : Fragment() {
                 dialogView.editTv.setOnClickListener {
                     val groupName = dialogView.groupName.text.toString()
                     val groupTime = dialogView.time.text.toString()
-                    val groupNameBol = notEmpty(groupName)
-                    val groupTimeBol = notEmpty(groupTime)
-
+                    val groupNameBol = Empty.empty(groupName)
+                    val groupTimeBol = Empty.empty(groupTime)
+                    val groupNameSpace = Empty.space(groupName)
+                    val groupTimeSpace = Empty.space(groupTime)
+                    val bol = groupNameBol && groupTimeBol
+                    val space = groupNameSpace && groupTimeSpace
                     var uniqueGroup = true
-                    val query =
-                        "select *from ${Constant.GROUP_TABLE} WHERE ${Constant.GROUP_COURSE_ID}  = $courseId"
-                    val allGroupList = pdpDb.getAllGroup(query)
-                    if (allGroupList.size != 1) {
-                        for (group in allGroupList) {
+                    val groupList = ArrayList<Groups>()
+                    groupList.addAll(pdpDb.CourseWithGroupsDao()
+                        .getGroupsByCourse(courseId!!).groups)
+
+                    if (groupList.size != 1) {
+                        for (group in groupList) {
                             if (group.name == groupName) {
                                 uniqueGroup = false
                             }
                         }
                     }
 
-                    if (groupName != " " && groupTime != " " && groupNameBol && groupTimeBol && uniqueGroup) {
+                    if (bol && space && uniqueGroup) {
                         group.name = groupName
                         group.time = groupTime
                         val selectedItem = dialogView.mentorListSpinner.selectedItemPosition
                         if (position != selectedItem) {
-                            group.mentorId =
-                                mentorList[dialogView.mentorListSpinner.selectedItemPosition].id
-                            val mentorOld = mentorList[position]
-                            var mentorOldGroupIdList =
-                                gson.fromJson<ArrayList<Int>>(mentorOld.groupIdList, type)
-                            mentorOldGroupIdList.remove(group.id) ///
-                            if (mentorOldGroupIdList.size == 0) {
-                                mentorOld.groupIdList = ""
-                            } else {
-                                val toJson = gson.toJson(mentorOldGroupIdList)
-                                mentorOld.groupIdList = toJson
-                            }
-                            pdpDb.updateMentor(mentorOld)
-                            val mentorNew = mentorList[selectedItem]
-                            if (mentorNew.groupIdList == "") {
-                                var list = ArrayList<Int>()
-                                list.add(group.id!!)
-                                val toJson = gson.toJson(list)
-                                mentorNew.groupIdList = toJson
-                            } else {
-                                var list =
-                                    gson.fromJson<ArrayList<Int>>(mentorNew.groupIdList, type)
-                                list.add(group.id!!)
-                                val toJson = gson.toJson(list)
-                                mentorNew.groupIdList = toJson
-                            }
-                            pdpDb.updateMentor(mentorNew)
+                            group.groupMentorId =
+                                mentorList[dialogView.mentorListSpinner.selectedItemPosition].mentorId
                         }
-                        pdpDb.updateGroup(group)
+                        pdpDb.GroupsDao().updateGroup(group)
                         groupRecyclerViewAdapter.notifyDataSetChanged()
                         dialog.dismiss()
                     }
@@ -224,21 +182,10 @@ class   GroupsViewPagerElementFragment : Fragment() {
         return binding.root
     }
 
-    private fun loadList(): ArrayList<Group> {
-        val query =
-            "select *from ${Constant.GROUP_TABLE} WHERE ${Constant.GROUP_LESSON} = $groupLesson AND ${Constant.GROUP_COURSE_ID}  = $courseId"
-        return pdpDb.getAllGroup(query)
-    }
-
-    private fun notEmpty(text: String): Boolean {
-        var textBol = false
-        for (c in text) {
-            if (c != ' ') {
-                textBol = true
-                break
-            }
-        }
-        return textBol
+    private fun loadList(): ArrayList<Groups> {
+        val groupList = ArrayList<Groups>()
+        groupList.addAll(pdpDb.GroupsDao().getGroupsByLessonStartCourse(groupLesson!!, courseId!!))
+        return groupList
     }
 
 

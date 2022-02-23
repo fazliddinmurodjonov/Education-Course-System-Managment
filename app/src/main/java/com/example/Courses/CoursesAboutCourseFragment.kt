@@ -9,21 +9,21 @@ import androidx.core.os.bundleOf
 import androidx.navigation.fragment.findNavController
 import com.example.androiddatabaselesson3pdpuz.R
 import com.example.androiddatabaselesson3pdpuz.databinding.FragmentCoursesAboutCourseBinding
-import com.example.db.PdpDb
+import com.example.room.Database.PdpDatabase
 
 class CoursesAboutCourseFragment : Fragment() {
 
     lateinit var binding: FragmentCoursesAboutCourseBinding
-    lateinit var pdpDb: PdpDb
+    lateinit var pdpDb: PdpDatabase
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View? {
         binding = FragmentCoursesAboutCourseBinding.inflate(inflater, container, false)
-        pdpDb = PdpDb(requireContext())
+        pdpDb = PdpDatabase.getInstance(requireContext())
         val courseId = arguments?.getInt("course_id")
-        val course = pdpDb.getCourseById(courseId!!)
+        val course = pdpDb.CourseDao().getCourseById(courseId!!)
         binding.courseName.text = course.name?.replace("\n", " ")
         binding.courseAbout.text = course.about
         binding.backButton.setOnClickListener {

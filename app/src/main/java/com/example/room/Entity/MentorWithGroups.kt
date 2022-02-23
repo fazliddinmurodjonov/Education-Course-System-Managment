@@ -1,4 +1,4 @@
-package com.example.room.entity
+package com.example.room.Entity
 
 import androidx.room.Embedded
 import androidx.room.Relation
@@ -9,5 +9,5 @@ data class MentorWithGroups(
         parentColumn = "mentorId",
         entityColumn = "groupMentorId"
     )
-    val groups: List<Group>,
+    val groups: List<Groups>,
 )

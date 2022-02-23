@@ -11,13 +11,13 @@ import androidx.navigation.fragment.findNavController
 import com.example.adapters.ViewPagerAdapter
 import com.example.androiddatabaselesson3pdpuz.R
 import com.example.androiddatabaselesson3pdpuz.databinding.FragmentGroupsAboutCourseGroupBinding
-import com.example.db.PdpDb
+import com.example.room.Database.PdpDatabase
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 
 class GroupsAboutCourseGroupFragment : Fragment() {
     lateinit var binding: FragmentGroupsAboutCourseGroupBinding
-    lateinit var pdpDb: PdpDb
+    lateinit var pdpDb: PdpDatabase
     lateinit var viewPagerList: ArrayList<Int>
     var currentItem: Int? = null
     var onResumeChecker = false
@@ -29,9 +29,8 @@ class GroupsAboutCourseGroupFragment : Fragment() {
         savedInstanceState: Bundle?,
     ): View? {
         binding = FragmentGroupsAboutCourseGroupBinding.inflate(inflater, container, false)
-        pdpDb = PdpDb(requireContext())
+        pdpDb = PdpDatabase.getInstance(requireContext())
         loadRV()
-
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
             tab.text = loadTabLayoutList[position]
         }.attach()

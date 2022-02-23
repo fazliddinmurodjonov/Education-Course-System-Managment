@@ -69,7 +69,6 @@
         app:tabIndicatorHeight="3dp"
         app:tabTextAppearance="@style/tab_text"
         app:tabTextColor="@color/white"
-
         tools:ignore="MissingConstraints" />
 
     <androidx.viewpager2.widget.ViewPager2

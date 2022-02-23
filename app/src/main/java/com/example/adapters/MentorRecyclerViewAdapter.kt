@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.androiddatabaselesson3pdpuz.R
 import com.example.androiddatabaselesson3pdpuz.databinding.ItemMentorBinding
-import com.example.room.entity.Mentor
+import com.example.room.Entity.Mentor
 
 class MentorRecyclerViewAdapter(var list: ArrayList<Mentor>) :
     RecyclerView.Adapter<MentorRecyclerViewAdapter.MyViewHolder>() {

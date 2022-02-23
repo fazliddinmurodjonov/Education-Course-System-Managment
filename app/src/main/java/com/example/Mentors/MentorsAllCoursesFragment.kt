@@ -10,22 +10,23 @@ import androidx.navigation.fragment.findNavController
 import com.example.adapters.CourseRecyclerViewAdapter
 import com.example.androiddatabaselesson3pdpuz.R
 import com.example.androiddatabaselesson3pdpuz.databinding.FragmentMentorsAllCoursesBinding
-import com.example.db.PdpDb
-import com.example.room.entity.Course
+import com.example.room.Database.PdpDatabase
+import com.example.room.Entity.Course
 
 
 class MentorsAllCoursesFragment : Fragment() {
 
     lateinit var binding: FragmentMentorsAllCoursesBinding
-    lateinit var pdpDb: PdpDb
+    lateinit var pdpDb: PdpDatabase
     lateinit var courseRecyclerViewAdapter: CourseRecyclerViewAdapter
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View? {
         binding = FragmentMentorsAllCoursesBinding.inflate(inflater, container, false)
-        pdpDb = PdpDb(requireContext())
-        val courseList = pdpDb.getAllCourse()
+        pdpDb = PdpDatabase.getInstance(requireContext())
+        val courseList = ArrayList<Course>()
+        courseList.addAll(pdpDb.CourseDao().getAllCourse())
         binding.backButton.setOnClickListener {
             findNavController().popBackStack()
         }
@@ -34,7 +35,7 @@ class MentorsAllCoursesFragment : Fragment() {
         courseRecyclerViewAdapter.setOnMyItemClickListener(object :
             CourseRecyclerViewAdapter.OnMyItemClickListener {
             override fun onClick(course: Course) {
-                val bundleOf = bundleOf("course_id" to course.id, "course_name" to course.name)
+                val bundleOf = bundleOf("course_id" to course.courseId, "course_name" to course.name)
                 findNavController().navigate(R.id.mentorsCourseMentorsFragment, bundleOf)
             }
 

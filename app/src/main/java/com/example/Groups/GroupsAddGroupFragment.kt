@@ -11,9 +11,10 @@ import androidx.navigation.fragment.findNavController
 import com.example.adapters.SpinnerDaysAdapter
 import com.example.adapters.SpinnerMentorAdapter
 import com.example.androiddatabaselesson3pdpuz.databinding.FragmentGroupsAddGroupBinding
-import com.example.db.PdpDb
-import com.example.room.entity.Group
-import com.example.room.entity.Mentor
+import com.example.room.Database.PdpDatabase
+import com.example.room.Entity.Groups
+import com.example.room.Entity.Mentor
+import com.example.util.Empty
 import com.example.utils.Constant
 import com.google.gson.Gson
 
@@ -21,7 +22,7 @@ import com.google.gson.Gson
 class GroupsAddGroupFragment : Fragment() {
 
     lateinit var binding: FragmentGroupsAddGroupBinding
-    lateinit var pdpDb: PdpDb
+    lateinit var pdpDb: PdpDatabase
     lateinit var gson: Gson
     var timeOfBegin: String = ""
     var timeOfEnd: String = ""
@@ -34,7 +35,7 @@ class GroupsAddGroupFragment : Fragment() {
     ): View? {
         courseId = arguments?.getInt("course_id")!!
 
-        pdpDb = PdpDb(requireContext())
+        pdpDb = PdpDatabase.getInstance(requireContext())
         gson = Gson()
         binding = FragmentGroupsAddGroupBinding.inflate(inflater, container, false)
         val mentorList = loadMentor()
@@ -67,64 +68,33 @@ class GroupsAddGroupFragment : Fragment() {
         binding.addDaysSpinner.adapter = spinnerDaysAdapter
         // Add a group is beginning here
         binding.addGroup.setOnClickListener {
-            var groupNameBol = false
+
             val groupName: String = binding.addGroupName.text.toString()
-            for (c in groupName) {
-                if (c != ' ') {
-                    groupNameBol = true
-                    break
-                }
-            }
-            var timeClockBol = false
+            val groupNameBol = Empty.empty(groupName)
             val timeClock: String = binding.addTime.text.toString()
-            for (c in timeClock) {
-                if (c != ' ') {
-                    timeClockBol = true
-                    break
-                }
-            }
+            val timeClockBol = Empty.empty(timeClock)
+            val groupNameSpace = Empty.space(groupName)
+            val timeClockSpace = Empty.space(timeClock)
+            val bol = groupNameBol && timeClockBol
+            val space = groupNameSpace && timeClockSpace
             val mentorPosition = binding.chooseMentorSpinner.selectedItemPosition
             val dayPosition = binding.addDaysSpinner.selectedItemPosition
-
             var uniqueGroup = true
-            val query =
-                "select *from ${Constant.GROUP_TABLE} WHERE ${Constant.GROUP_COURSE_ID}  = $courseId"
-            val allGroupList = pdpDb.getAllGroup(query)
+
+            val allGroupList = ArrayList<Groups>()
+            allGroupList.addAll(pdpDb.CourseWithGroupsDao().getGroupsByCourse(courseId).groups)
             for (group in allGroupList) {
                 if (group.name == groupName) {
                     uniqueGroup = false
                 }
             }
-            if (groupNameBol && groupName != " " && timeClockBol && timeClock != " " && mentorPosition != 0 && dayPosition != 0 && uniqueGroup) {
+            if (bol && space && mentorPosition != 0 && dayPosition != 0 && uniqueGroup) {
 
                 var mentor = mentorList[mentorPosition]
                 val days = loadDaysList[dayPosition]
 
-                val group = Group(groupName, timeClock, days, 0, courseId, mentor.id, 0)
-                pdpDb.insertGroup(group)
-
-                val query =
-                    "select *from ${Constant.GROUP_TABLE} WHERE ${Constant.GROUP_MENTOR_ID}  = ${mentor.id}"
-                val allGroup = pdpDb.getAllGroup(query)
-                var groupIdList = ArrayList<Int>()
-
-                for (group in allGroup) {
-                    groupIdList.add(group.id!!)
-                }
-                val toJson = gson.toJson(groupIdList)
-                mentor.groupIdList = toJson
-//                var mentorGroupIdList: String = ""
-//                if (mentor.groupIdList == "") {
-//                    mentorGroupIdList = gson.toJson(groupIdList)
-//
-//                } else {
-//                    val type = object : TypeToken<ArrayList<Int>>() {}.type
-//                    val fromJsonList = gson.fromJson<ArrayList<Int>>(mentor.groupIdList, type)
-//                    groupIdList.addAll(fromJsonList)
-//                    mentorGroupIdList = gson.toJson(groupIdList)
-//                }
-//                mentor.groupIdList = mentorGroupIdList
-                pdpDb.updateMentor(mentor)
+                val group = Groups(groupName, timeClock, days, mentor.mentorId, courseId, 0, 0)
+                pdpDb.GroupsDao().insertGroup(group)
                 findNavController().popBackStack()
             }
         }
@@ -141,7 +111,7 @@ class GroupsAddGroupFragment : Fragment() {
 
     private fun loadMentor(): ArrayList<Mentor> {
         val mentorList = ArrayList<Mentor>()
-        val allMentor = pdpDb.getAllMentor(courseId!!)
+        val allMentor = pdpDb.CourseWithMentorsDao().getMentorsByCourse(courseId).mentors
         var mentor = Mentor()
         mentor.firstname = "Select"
         mentor.lastname = "mentor"
